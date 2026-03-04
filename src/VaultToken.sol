@@ -29,23 +29,23 @@ contract VaultToken is ERC20 {
     address public immutable DEPLOYER;
 
     /// @notice The only address permitted to call mint(). Set once via setVault().
-    address public VAULT;
+    address public vault;
 
     constructor() ERC20("VaultToken", "VTK") {
         DEPLOYER = msg.sender;
     }
 
     /// @notice Permanently set the vault minter. Can only be called once, by the deployer.
-    function setVault(address vault) external {
+    function setVault(address _vault) external {
         if (msg.sender != DEPLOYER) revert UnauthorizedMinter(msg.sender);
-        if (VAULT != address(0)) revert VaultAlreadySet();
-        if (vault == address(0)) revert ZeroVaultAddress();
-        VAULT = vault;
+        if (vault != address(0)) revert VaultAlreadySet();
+        if (_vault == address(0)) revert ZeroVaultAddress();
+        vault = _vault;
     }
 
     /// @notice Mint reward tokens. Callable only by the vault contract.
     function mint(address to, uint256 amount) external {
-        if (msg.sender != VAULT) revert UnauthorizedMinter(msg.sender);
+        if (msg.sender != vault) revert UnauthorizedMinter(msg.sender);
         uint256 available = MAX_SUPPLY - totalSupply();
         if (amount > available) revert CapExceeded(amount, available);
         _mint(to, amount);

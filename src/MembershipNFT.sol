@@ -47,13 +47,19 @@ contract MembershipNFT is ERC721, Ownable {
     ///         Each address may hold at most one NFT.
     function mint(address to, Tier tier) external onlyOwner {
         if (balanceOf(to) > 0) revert AlreadyHasMembership(to);
+
         uint256 tokenId = _nextTokenId++;
-        // forge-lint: disable-next-line(unsafe-typecast)
-        // casting to 'uint96' is safe because token IDs are minted sequentially and
-        // uint96 can hold ~7.9e28 values — far beyond any realistic NFT supply.
-        // forge-lint: disable-next-line(unsafe-typecast)
-        // tokenId is sequential and will never exceed uint96 max range
-        _memberships[to] = MembershipData({tier: tier, tokenId: uint96(tokenId)});
+
+        // Ensure tokenId fits into uint96 before casting
+        require(tokenId <= type(uint96).max, "tokenId overflow");
+
+        _memberships[to] = MembershipData({
+            tier: tier,
+            // forge-lint: disable-next-line(unsafe-typecast)
+            // casting to uint96 is safe due to explicit bound check above
+            tokenId: uint96(tokenId)
+        });
+
         _tokenOwner[tokenId] = to;
         _safeMint(to, tokenId);
     }

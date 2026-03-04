@@ -9,11 +9,7 @@ import {MockPriceFeed} from "../src/MockPriceFeed.sol";
 import {MockERC20} from "../src/MockERC20.sol";
 import {
     LockVault,
-    TokenNotWhitelisted,
-    TokenAlreadyWhitelisted,
-    ZeroAmount,
-    StakeNotExpired,
-    StakeAlreadyClaimed
+    StakeNotExpired
 } from "../src/LockVault.sol";
 
 contract LockVaultTest is Test {
