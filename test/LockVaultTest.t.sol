@@ -7,31 +7,28 @@ import {VaultToken, CapExceeded, UnauthorizedMinter} from "../src/VaultToken.sol
 import {MembershipNFT, SoulboundTransferNotAllowed, AlreadyHasMembership} from "../src/MembershipNFT.sol";
 import {MockPriceFeed} from "../src/MockPriceFeed.sol";
 import {MockERC20} from "../src/MockERC20.sol";
-import {
-    LockVault,
-    StakeNotExpired
-} from "../src/LockVault.sol";
+import {LockVault, StakeNotExpired} from "../src/LockVault.sol";
 
 contract LockVaultTest is Test {
     // -------------------------------------------------------------------------
     // Actors
     // -------------------------------------------------------------------------
-    address internal admin    = makeAddr("admin");
-    address internal alice    = makeAddr("alice");
+    address internal admin = makeAddr("admin");
+    address internal alice = makeAddr("alice");
     address internal treasury = makeAddr("treasury");
 
     // -------------------------------------------------------------------------
     // Contracts
     // -------------------------------------------------------------------------
-    LockVault     internal vault;
-    VaultToken    internal vaultToken;
+    LockVault internal vault;
+    VaultToken internal vaultToken;
     MembershipNFT internal membership;
     MockPriceFeed internal priceFeed;
-    MockERC20     internal stakingToken;
+    MockERC20 internal stakingToken;
 
     // baseRate: 1e9 / 1e18 reward tokens per staked token per second
-    uint256 internal constant BASE_RATE   = 1e9;
-    int256  internal constant TOKEN_PRICE = 1_00000000; // $1.00 with 8 decimals
+    uint256 internal constant BASE_RATE = 1e9;
+    int256 internal constant TOKEN_PRICE = 1_00000000; // $1.00 with 8 decimals
 
     // -------------------------------------------------------------------------
     // Setup
@@ -40,13 +37,13 @@ contract LockVaultTest is Test {
     function setUp() public {
         vm.startPrank(admin);
 
-        vaultToken   = new VaultToken();
-        membership   = new MembershipNFT(admin);
-        vault        = new LockVault(admin, address(vaultToken), address(membership), treasury, BASE_RATE);
+        vaultToken = new VaultToken();
+        membership = new MembershipNFT(admin);
+        vault = new LockVault(admin, address(vaultToken), address(membership), treasury, BASE_RATE);
         vaultToken.setVault(address(vault));
 
         stakingToken = new MockERC20("Staking Token", "STK", 18);
-        priceFeed    = new MockPriceFeed(admin, TOKEN_PRICE);
+        priceFeed = new MockPriceFeed(admin, TOKEN_PRICE);
         vault.addToken(address(stakingToken), address(priceFeed));
 
         vm.stopPrank();
@@ -134,8 +131,8 @@ contract LockVaultTest is Test {
     // =========================================================================
 
     function test_Vault_AddTokenToWhitelist() public {
-        MockERC20     newToken = new MockERC20("New", "NEW", 18);
-        MockPriceFeed newFeed  = new MockPriceFeed(admin, TOKEN_PRICE);
+        MockERC20 newToken = new MockERC20("New", "NEW", 18);
+        MockPriceFeed newFeed = new MockPriceFeed(admin, TOKEN_PRICE);
         vm.prank(admin);
         vault.addToken(address(newToken), address(newFeed));
         (bool whitelisted,) = vault.tokenInfos(address(newToken));
@@ -171,9 +168,7 @@ contract LockVaultTest is Test {
         vm.prank(alice);
         vault.stake(address(stakingToken), 100 * 1e18, LockVault.LockTier.ThirtyDays);
 
-        vm.expectRevert(
-            abi.encodeWithSelector(StakeNotExpired.selector, block.timestamp + 30 days)
-        );
+        vm.expectRevert(abi.encodeWithSelector(StakeNotExpired.selector, block.timestamp + 30 days));
         vm.prank(alice);
         vault.withdraw(0);
     }
@@ -187,12 +182,12 @@ contract LockVaultTest is Test {
         vm.prank(alice);
         vault.emergencyWithdraw(0);
 
-        uint256 accrued  = (amount * BASE_RATE * 15 days) / 1e18;
-        uint256 penalty  = accrued / 2;
+        uint256 accrued = (amount * BASE_RATE * 15 days) / 1e18;
+        uint256 penalty = accrued / 2;
         uint256 userRewards = accrued - penalty;
 
         assertEq(stakingToken.balanceOf(alice), 1_000 * 1e18); // full principal back
-        assertEq(vaultToken.balanceOf(alice),   userRewards);
+        assertEq(vaultToken.balanceOf(alice), userRewards);
         assertEq(vaultToken.balanceOf(treasury), penalty);
     }
 
@@ -212,8 +207,8 @@ contract LockVaultTest is Test {
         vm.prank(alice);
         vault.withdraw(0);
 
-        uint256 base    = (amount * BASE_RATE * 30 days) / 1e18;
-        uint256 bonus   = (base * 5000) / 10_000; // 50% Gold
+        uint256 base = (amount * BASE_RATE * 30 days) / 1e18;
+        uint256 bonus = (base * 5000) / 10_000; // 50% Gold
         assertEq(vaultToken.balanceOf(alice), base + bonus);
     }
 
@@ -259,7 +254,7 @@ contract LockVaultTest is Test {
 
         vm.warp(block.timestamp + elapsed);
 
-        uint256 pending  = vault.getPendingRewards(alice, 0);
+        uint256 pending = vault.getPendingRewards(alice, 0);
         uint256 maxRewards = (amount * BASE_RATE * 30 days) / 1e18;
         assertLe(pending, maxRewards);
     }

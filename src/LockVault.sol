@@ -203,13 +203,7 @@ contract LockVault is Ownable {
         // Effects before interaction
         uint256 stakeIndex = _stakes[msg.sender].length;
         _stakes[msg.sender].push(
-            Stake({
-                token: token,
-                amount: amount,
-                lockTier: lockTier,
-                startTimestamp: block.timestamp,
-                claimed: false
-            })
+            Stake({token: token, amount: amount, lockTier: lockTier, startTimestamp: block.timestamp, claimed: false})
         );
         totalStaked[token] += amount;
 
@@ -346,11 +340,7 @@ contract LockVault is Ownable {
     /// @dev Compute rewards for a stake up to `asOfTimestamp`.
     ///      Capped at the end of the lock period so rewards don't compound past expiry.
     ///      Membership bonus is checked at call time (applied at claim time, not deposit time).
-    function _calculateRewards(Stake storage s, uint256 asOfTimestamp, address user)
-        private
-        view
-        returns (uint256)
-    {
+    function _calculateRewards(Stake storage s, uint256 asOfTimestamp, address user) private view returns (uint256) {
         uint256 lockDuration = _lockDuration(s.lockTier);
         uint256 endTime = s.startTimestamp + lockDuration;
         uint256 effectiveEnd = asOfTimestamp < endTime ? asOfTimestamp : endTime;

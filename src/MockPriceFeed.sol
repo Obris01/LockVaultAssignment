@@ -18,13 +18,7 @@ interface AggregatorV3Interface {
     function latestRoundData()
         external
         view
-        returns (
-            uint80 roundId,
-            int256 answer,
-            uint256 startedAt,
-            uint256 updatedAt,
-            uint80 answeredInRound
-        );
+        returns (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound);
 }
 
 /// @title MockPriceFeed
@@ -58,13 +52,7 @@ contract MockPriceFeed is AggregatorV3Interface, Ownable {
         external
         view
         override
-        returns (
-            uint80 roundId,
-            int256 answer,
-            uint256 startedAt,
-            uint256 updatedAt,
-            uint80 answeredInRound
-        )
+        returns (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound)
     {
         return (_roundId, _price, block.timestamp, block.timestamp, _roundId);
     }

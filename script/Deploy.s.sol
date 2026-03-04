@@ -49,13 +49,7 @@ contract Deploy is Script {
 
         // --- 3. Deploy LockVault ---
         uint256 baseRewardRate = 1e9;
-        LockVault vault = new LockVault(
-            deployer,
-            address(vaultToken),
-            address(membershipNft),
-            treasury,
-            baseRewardRate
-        );
+        LockVault vault = new LockVault(deployer, address(vaultToken), address(membershipNft), treasury, baseRewardRate);
         console.log("LockVault deployed at:", address(vault));
 
         // --- 4. Wire vault as the authorised minter (permanent, one-time call) ---

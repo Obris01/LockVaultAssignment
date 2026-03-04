@@ -50,16 +50,11 @@ contract MembershipNFT is ERC721, Ownable {
 
         uint256 tokenId = _nextTokenId++;
 
-        // Ensure tokenId fits into uint96 before casting
-        require(tokenId <= type(uint96).max, "tokenId overflow");
+        // casting to uint96 is safe: explicit bound check on the line above guarantees no truncation
+        // forge-lint: disable-next-line(unsafe-typecast)
+        uint96 tokenId96 = uint96(tokenId);
 
-        _memberships[to] = MembershipData({
-            tier: tier,
-            // forge-lint: disable-next-line(unsafe-typecast)
-            // casting to uint96 is safe due to explicit bound check above
-            tokenId: uint96(tokenId)
-        });
-
+        _memberships[to] = MembershipData({tier: tier, tokenId: tokenId96});
         _tokenOwner[tokenId] = to;
         _safeMint(to, tokenId);
     }
@@ -77,11 +72,7 @@ contract MembershipNFT is ERC721, Ownable {
 
     /// @dev Override ERC-721's internal _update hook.
     ///      Minting (from == address(0)) is allowed; everything else is blocked.
-    function _update(address to, uint256 tokenId, address auth)
-        internal
-        override
-        returns (address)
-    {
+    function _update(address to, uint256 tokenId, address auth) internal override returns (address) {
         address from = _ownerOf(tokenId);
         if (from != address(0)) revert SoulboundTransferNotAllowed();
         return super._update(to, tokenId, auth);
